@@ -1,6 +1,6 @@
 {
   "name": "hardhat-fund-me",
-  "autor": "catella",
+  "author": "catella",
   "version": "1.0.0",
   "devDependencies": {
     "@chainlink/contracts": "^0.4.1",

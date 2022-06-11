@@ -1,4 +1,4 @@
-const { network } = require("hardhat")
+const { getNamedAccounts, deployments, network } = require("hardhat")
 const { networkConfig, developmentChains } = require("../helper-hardhat-config")
 const { verify } = require("../utils/verify")
 
@@ -8,26 +8,21 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const chainId = network.config.chainId
 
     let ethUsdPriceFeedAddress
-    if (developmentChains.includes(network.name)) {
+    if (chainId == 31337) {
         const ethUsdAggregator = await deployments.get("MockV3Aggregator")
         ethUsdPriceFeedAddress = ethUsdAggregator.address
     } else {
         ethUsdPriceFeedAddress = networkConfig[chainId]["ethUsdPriceFeed"]
     }
-    log(ethUsdPriceFeedAddress)
     log("----------------------------------------------------")
     log("Deploying FundMe and waiting for confirmations...")
-
-    const args = [ethUsdPriceFeedAddress]
-
     const fundMe = await deploy("FundMe", {
         from: deployer,
-        args: args,
+        args: [ethUsdPriceFeedAddress],
         log: true,
         // we need to wait if on a live network so we can verify properly
         waitConfirmations: network.config.blockConfirmations || 1,
     })
-    //log("----------------------------------------------------")
     log(`FundMe deployed at ${fundMe.address}`)
 
     if (
@@ -36,7 +31,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     ) {
         await verify(fundMe.address, [ethUsdPriceFeedAddress])
     }
-    log("----------------------------------------------------")
 }
 
 module.exports.tags = ["all", "fundme"]
